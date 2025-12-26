@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlatShift Global Chatbot</title>
+
+<style>
+/* =========================
+   GLOBAL (POWER BI SAFE)
+========================= */
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: #f4f6f9;
+    overflow: hidden; /* 🔥 NO PAGE SCROLL */
+}
+
+/* Make body flex */
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================
+   CHAT CONTAINER
+========================= */
+.chat-container {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 🔥 Prevent outer scrollbar */
+}
+
+/* =========================
+   HEADER (FIXED IN FLEX)
+========================= */
+.chat-header {
+    padding: 16px;
+    font-size: clamp(18px, 2.5vw, 26px);
+    font-weight: 700;
+    text-align: center;
+    color: #1f3b57;
+    border-bottom: 1px solid #ddd;
+    flex-shrink: 0; /* 🔥 Always visible */
+}
+
+/* =========================
+   CHAT BODY (ONLY SCROLL AREA)
+========================= */
+.chat-box {
+    flex: 1;
+    min-height: 0; /* 🔥 CRITICAL FOR SMALL SCREENS */
+    padding: 16px;
+    overflow-y: auto;
+    background: #ffffff;
+}
+
+/* =========================
+   USER MESSAGE
+========================= */
+.message.user {
+    max-width: 85%;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    border-radius: 14px;
+    background: #1f3b57;
+    color: #ffffff;
+    margin-left: auto;
+    font-size: clamp(14px, 1.8vw, 18px);
+    line-height: 1.5;
+}
+
+/* =========================
+   BOT MESSAGE
+========================= */
+.bot-wrapper {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+}
+
+.bot-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #1f7aff;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.message.bot {
+    max-width: 85%;
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: #eef3f9;
+    color: #000000;
+    font-size: clamp(14px, 1.8vw, 18px);
+    line-height: 1.5;
+}
+
+/* =========================
+   FOOTER (INPUT)
+========================= */
+.chat-input {
+    padding: 12px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: #ffffff;
+    flex-shrink: 0; /* 🔥 Always visible */
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: clamp(14px, 1.8vw, 18px);
+    height: 48px;
+    border-radius: 10px;
+    border: 1px solid #bbb;
+    outline: none;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.icon-btn {
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.send-btn { background: #1f7aff; }
+.clear-btn { background: #ff4d4d; }
+
+/* =========================
+   MOBILE OPTIMIZATION
+========================= */
+@media (max-width: 600px) {
+    .chat-header {
+        padding: 12px;
+        font-size: 18px;
+    }
+
+    .chat-input {
+        padding: 8px;
+    }
+
+    .chat-box {
+        padding: 12px;
+    }
+
+    .bot-avatar {
+        width: 34px;
+        height: 34px;
+        font-size: 16px;
+    }
+
+    .message.user,
+    .message.bot {
+        max-width: 95%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat-container">
+
+    <div class="chat-header">
+        PlatShift Global Chatbot
+    </div>
+
+    <div class="chat-box" id="chatBox"></div>
+
+    <div class="chat-input">
+        <input type="text" id="userInput" placeholder="Ask something..." />
+        <button class="icon-btn send-btn" onclick="sendMessage()">➤</button>
+        <button class="icon-btn clear-btn" onclick="clearChat()">✖</button>
+    </div>
+
+</div>
+
+<script>
+/* =========================
+   DATA
+========================= */
+const DASHBOARD_DATA = {
+    total_workspaces: 5,
+    total_datasources: 5,
+    total_reports: 5,
+    total_tables: 5,
+    total_relationships: 8,
+    total_columns: 9,
+    total_files: 5,
+    total_report_pages: 5,
+    total_visual_containers: 8,
+    used_columns: 1,
+    unused_columns: 5,
+    repeated_columns: 9,
+    columns_in_container: 8,
+    total_functions: 3,
+    total_measures: 11,
+    total_users: 5,
+    total_roles: 5,
+    total_groups: 5,
+    total_refresh_attempts: 5,
+    total_refresh_types: 3,
+    last_status: "Success",
+    first_refresh_type: "Manual",
+    total_sensitivity_labels: 5,
+    total_scans: 5,
+    total_endorsements: 5,
+    first_scan_result_status: "Fail",
+    last_scan_result_status: "Warning",
+    total_no_of_dlp_policy: 6,
+    total_no_of_workload: 5,
+    total_no_of_dlp_policy_workload_type: 1,
+    total_no_of_distribution_status: 1,
+    total_partitions: 5
+};
+
+const METRICS = [
+    { label: "workspaces", dataKey: "total_workspaces", keywords: ["workspace", "workspaces"] },
+    { label: "datasources", dataKey: "total_datasources", keywords: ["datasource", "datasources"] },
+    { label: "reports", dataKey: "total_reports", keywords: ["report", "reports"] },
+    { label: "tables", dataKey: "total_tables", keywords: ["table", "tables"] },
+    { label: "users", dataKey: "total_users", keywords: ["user", "users"] },
+    { label: "roles", dataKey: "total_roles", keywords: ["role", "roles"] },
+    { label: "groups", dataKey: "total_groups", keywords: ["group", "groups"] },
+    { label: "measures", dataKey: "total_measures", keywords: ["measure", "measures"] }
+];
+
+/* =========================
+   CHAT LOGIC
+========================= */
+const chatBox = document.getElementById("chatBox");
+const userInput = document.getElementById("userInput");
+
+function normalize(text) {
+    return text.toLowerCase().replace(/[^a-z0-9 ]/g, "");
+}
+
+function findMetric(text) {
+    return METRICS.find(m => m.keywords.some(k => text.includes(k))) || null;
+}
+
+function getBotReply(input) {
+    const metric = findMetric(normalize(input));
+    if (!metric) return "Please ask about correct metrics.";
+    return `There are <b>${DASHBOARD_DATA[metric.dataKey]}</b> ${metric.label}.`;
+}
+
+function addUser(text) {
+    const div = document.createElement("div");
+    div.className = "message user";
+    div.innerText = text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function addBot(text) {
+    const wrap = document.createElement("div");
+    wrap.className = "bot-wrapper";
+
+    const avatar = document.createElement("div");
+    avatar.className = "bot-avatar";
+    avatar.innerText = "🤖";
+
+    const msg = document.createElement("div");
+    msg.className = "message bot";
+    msg.innerHTML = text;
+
+    wrap.appendChild(avatar);
+    wrap.appendChild(msg);
+    chatBox.appendChild(wrap);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    addUser(text);
+    userInput.value = "";
+
+    setTimeout(() => addBot(getBotReply(text)), 400);
+}
+
+function clearChat() {
+    chatBox.innerHTML = "";
+}
+
+userInput.addEventListener("keydown", e => {
+    if (e.key === "Enter") sendMessage();
+});
+</script>
+
+</body>
+</html>
